@@ -30,14 +30,11 @@
                    (string-append dir "/cmdline") read-args))
          (proc-stat (with-input-from-file
                         (string-append dir "/stat") read-line))
-         (cmd (string-copy proc-stat
-                           (+ 1 (string-index proc-stat #\( ))
-                           (string-index-right proc-stat #\) )))
-         (ppid (string->number
-                (car
-                 (string-tokenize
-                  (string-copy proc-stat
-                               (+ 4 (string-index-right proc-stat #\) ))))))))
+         (lindex (string-index proc-stat #\( ))
+         (rindex (string-index-right proc-stat #\) ))
+         (cmd (string-copy proc-stat (+ 1 lindex) rindex))
+         (ppid (string->number (car (string-tokenize
+                                     (string-copy proc-stat (+ 4 rindex)))))))
     (make-proc cmd pid ppid uid args)))
 
 (define (get-pids dir)
