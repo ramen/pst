@@ -1,4 +1,4 @@
-#!/usr/bin/csi -s
+#!/usr/bin/csi -ss
 
 (use format)
 (use posix)
@@ -95,4 +95,5 @@
   (let ((root (find (lambda (proc) (= (proc-pid proc) start)) procs)))
     ((show-proc 0 #t '() 0) root)))
 
-(show-tree 1 (read-procs))
+(define (main args)
+  (show-tree 1 (read-procs)))
