@@ -15,7 +15,7 @@
        ((char=? c #\\) (cons #\\ (cons #\\ lst)))
        ((and (char>? c #\space) (char<=? c #\~)) (cons c lst))
        (else (append-reverse
-              (string->list (format "\\~3,48O" (char->integer c))) lst))))
+              (string->list (format "\\~3,48o" (char->integer c))) lst))))
     '() cmd)))
 
 (define (read-args)
@@ -74,23 +74,16 @@
         (do ((i 1 (+ i 1)))
             ((> i depth))
           (let ((more (cadr (assoc i more-at-depth))))
-            (display "  ")
-            (display
-             (if (= i depth)
-                 (if last "`-" "|-")
-                 (if more "| " "  "))))))
-    (display (proc-cmd proc))
-    (display ",")
-    (display (proc-pid proc))
+            (format #t "  ~a"
+                    (if (= i depth)
+                        (if last "`-" "|-")
+                        (if more "| " "  "))))))
+    (format #t "~a,~a" (proc-cmd proc) (proc-pid proc))
     (if (not (= (proc-uid proc) last-uid))
-        (begin
-          (display ",")
-          (display (get-username (proc-uid proc)))))
+        (format #t ",~a" (get-username (proc-uid proc))))
     (if (> (length (proc-args proc)) 1)
-        (begin
-          (display " ")
-          (display (string-join (map escape (cdr (proc-args proc))) " "))))
-    (display "\n")
+        (format #t " ~a" (string-join (map escape (cdr (proc-args proc))) " ")))
+    (format #t "\n")
     (show-children depth more-at-depth (proc-pid proc) (proc-uid proc)))
   (let ((root (find (lambda (proc) (= (proc-pid proc) start)) procs)))
     ((show-proc 0 #t '() 0) root)))
