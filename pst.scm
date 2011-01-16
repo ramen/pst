@@ -65,15 +65,11 @@
           (let ((last (car children))
                 (rest (cdr children)))
             (for-each
-             (lambda (proc)
-               (show-proc depth #f
-                          (cons (list depth #t) more-at-depth)
-                          last-uid proc))
+             (show-proc depth #f (cons (list depth #t) more-at-depth) last-uid)
              (reverse rest))
-            (show-proc depth #t
-                       (cons (list depth #f) more-at-depth)
-                       last-uid last)))))
-  (define (show-proc depth last more-at-depth last-uid proc)
+            ((show-proc depth #t (cons (list depth #f) more-at-depth) last-uid)
+             last)))))
+  (define ((show-proc depth last more-at-depth last-uid) proc)
     (if (not (= depth 0))
         (do ((i 1 (+ i 1)))
             ((> i depth))
@@ -97,6 +93,6 @@
     (display "\n")
     (show-children depth more-at-depth (proc-pid proc) (proc-uid proc)))
   (let ((root (find (lambda (proc) (= (proc-pid proc) start)) procs)))
-    (show-proc 0 #t '() 0 root)))
+    ((show-proc 0 #t '() 0) root)))
 
 (show-tree 1 (read-procs))
