@@ -19,9 +19,12 @@
     '() cmd)))
 
 (define (read-args)
-  (let ((line (read-line)))
-    (if (eof-object? line) '()
-        (string-tokenize line (lambda (c) (not (char=? c #\nul)))))))
+   (let loop ()
+     (if (eof-object? (peek-char))
+         '()
+         (let ((arg (read-token (lambda (c) (not (char=? c #\nul))))))
+           (read-char)
+           (cons arg (loop))))))
 
 (define (build-proc pid)
   (let* ((dir (string-append "/proc/" (number->string pid)))
