@@ -30,11 +30,11 @@
                    (string-append dir "/cmdline") read-args))
          (proc-stat (with-input-from-file
                         (string-append dir "/stat") read-line))
-         (lindex (string-index proc-stat #\( ))
-         (rindex (string-index-right proc-stat #\) ))
-         (cmd (string-copy proc-stat (+ 1 lindex) rindex))
-         (ppid (string->number (car (string-tokenize
-                                     (string-copy proc-stat (+ 4 rindex)))))))
+         (lparen (string-index proc-stat #\( ))
+         (rparen (string-index-right proc-stat #\) ))
+         (cmd (string-copy proc-stat (+ 1 lparen) rparen))
+         (ppid (string->number (car (string-tokenize proc-stat char-set:graphic
+                                                     (+ 4 rparen))))))
     (make-proc cmd pid ppid uid args)))
 
 (define (get-pids dir)
@@ -80,7 +80,7 @@
         (format #t ",~a" (get-username (proc-uid proc))))
     (if (> (length (proc-args proc)) 1)
         (format #t " ~a" (string-join (map escape (cdr (proc-args proc))) " ")))
-    (format #t "\n")
+    (format #t "~%")
     (show-children depth more-at-depth (proc-pid proc) (proc-uid proc)))
   (let ((root (find (lambda (proc) (= (proc-pid proc) start)) procs)))
     ((show-proc 0 #t '() 0) root)))
