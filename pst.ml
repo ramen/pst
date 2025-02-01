@@ -20,7 +20,7 @@ let escape cmd =
   done;
   Buffer.contents buf
 
-let arg_stream ch =
+let arg_seq ch =
   let buf = Buffer.create 256 in
   let rec next () =
     match (try Some (input_char ch) with End_of_file -> None) with
@@ -35,9 +35,7 @@ let arg_stream ch =
   Seq.unfold next ()
 
 let read_args ch =
-  let args = ref [] in
-  Seq.iter (fun arg -> args := arg :: !args) (arg_stream ch);
-  List.rev !args
+  List.of_seq (arg_seq ch)
 
 let with_in_channel name f =
   let ch = open_in name in
