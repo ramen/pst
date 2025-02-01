@@ -4,7 +4,7 @@ import os
 import pwd
 import sys
 
-from cStringIO import StringIO
+from io import StringIO
 
 def escape(cmd):
     buf = StringIO()
@@ -75,7 +75,7 @@ def show_tree(start, procs):
             show_proc(depth, True, more, last_uid, last)
     def show_proc(depth, last, more_at_depth, last_uid, proc):
         if depth != 0:
-            for i in xrange(1, depth + 1):
+            for i in range(1, depth + 1):
                 more = more_at_depth[i]
                 sys.stdout.write('  ')
                 if i == depth:
