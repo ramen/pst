@@ -1,4 +1,5 @@
 #!/usr/bin/ocaml
+#directory "+unix";;
 #load "unix.cma";;
 
 type proc = { cmd  : string;
