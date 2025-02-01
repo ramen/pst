@@ -1,4 +1,4 @@
-#!/usr/bin/ruby1.9 -w
+#!/usr/bin/ruby -w
 
 require 'etc'
 require 'stringio'
