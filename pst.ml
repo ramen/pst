@@ -20,22 +20,29 @@ let escape cmd =
   done;
   Buffer.contents buf
 
-let arg_seq ch =
+let arg_seq seq =
   let buf = Buffer.create 256 in
-  let rec next () =
-    match (try Some (input_char ch) with End_of_file -> None) with
+  let rec next seq =
+    match Seq.uncons seq with
       | None when Buffer.length buf = 0 -> None
-      | None | Some '\000' ->
+      | None -> Some (Buffer.contents buf, Seq.empty)
+      | Some ('\000', seq') ->
           let s = Buffer.contents buf in
           Buffer.clear buf;
-          Some (s, ())
-      | Some c ->
+          Some (s, seq')
+      | Some (c, seq') ->
           Buffer.add_char buf c;
-          next () in
-  Seq.unfold next ()
+          next seq' in
+  Seq.unfold next seq
+
+let seq_of_channel ch =
+  let rec next () =
+    try Some (input_char ch, ())
+    with End_of_file -> None in
+  Seq.once (Seq.unfold next ())
 
 let read_args ch =
-  List.of_seq (arg_seq ch)
+  List.of_seq (arg_seq (seq_of_channel ch))
 
 let with_in_channel name f =
   let ch = open_in name in
