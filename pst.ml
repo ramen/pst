@@ -20,26 +20,23 @@ let escape cmd =
   done;
   Buffer.contents buf
 
-let arg_stream strm =
+let arg_stream ch =
   let buf = Buffer.create 256 in
-  let rec next i =
-    match Stream.peek strm with
+  let rec next () =
+    match (try Some (input_char ch) with End_of_file -> None) with
       | None when Buffer.length buf = 0 -> None
       | None | Some '\000' ->
-          Stream.junk strm;
           let s = Buffer.contents buf in
           Buffer.clear buf;
-          Some s
+          Some (s, ())
       | Some c ->
-          Stream.junk strm;
           Buffer.add_char buf c;
-          next i in
-  Stream.from next
+          next () in
+  Seq.unfold next ()
 
 let read_args ch =
-  let strm = Stream.of_channel ch in
   let args = ref [] in
-  Stream.iter (fun arg -> args := arg :: !args) (arg_stream strm);
+  Seq.iter (fun arg -> args := arg :: !args) (arg_stream ch);
   List.rev !args
 
 let with_in_channel name f =
