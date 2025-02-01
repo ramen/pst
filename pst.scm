@@ -1,8 +1,15 @@
 #!/usr/bin/csi -ss
 
-(use format)
-(use posix)
-(use srfi-1)
+(import (chicken file posix)
+        (chicken file)
+        (chicken format)
+        (chicken io)
+        (chicken process-context posix)
+        (chicken sort)
+        srfi-1
+        srfi-13
+        srfi-14
+        srfi-69)
 
 (define-record proc
   cmd pid ppid uid args)
