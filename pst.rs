@@ -68,14 +68,7 @@ fn get_pids() -> io::Result<Vec<i32>> {
 }
 
 fn read_procs() -> io::Result<Vec<Process>> {
-    let pids = get_pids()?;
-    let mut procs = Vec::new();
-    for pid in pids {
-        if let Ok(proc) = build_proc(pid) {
-            procs.push(proc);
-        }
-    }
-    Ok(procs)
+    get_pids()?.into_iter().map(build_proc).collect()
 }
 
 // fn get_username(uid: u32) -> Option<String> {
