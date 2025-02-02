@@ -1,7 +1,8 @@
-use std::collections::HashSet;
-use std::fs;
-use std::io::{self, Read};
+use std::collections::{HashMap, HashSet};
+use std::fs::{self, File};
+use std::io::{self, BufRead, Read};
 use std::os::unix::fs::MetadataExt;
+use std::sync::{Mutex, Once};
 
 #[derive(PartialEq, PartialOrd)]
 struct Process {
@@ -71,21 +72,32 @@ fn read_procs() -> io::Result<Vec<Process>> {
     get_pids()?.into_iter().map(build_proc).collect()
 }
 
-// fn get_username(uid: u32) -> Option<String> {
-//     use std::ffi::CStr;
-//     use std::os::raw::c_char;
-//     use std::ptr;
-//
-//     unsafe {
-//         let passwd = libc::getpwuid(uid);
-//         if passwd.is_null() {
-//             None
-//         } else {
-//             let name = CStr::from_ptr((*passwd).pw_name as *const c_char);
-//             Some(name.to_string_lossy().into_owned())
-//         }
-//     }
-// }
+static INIT: Once = Once::new();
+static mut USERNAME_MAP: Option<Mutex<HashMap<u32, String>>> = None;
+
+fn get_username(uid: u32) -> Option<String> {
+    INIT.call_once(|| {
+        let mut map = HashMap::new();
+        if let Ok(passwd_file) = File::open("/etc/passwd") {
+            let reader = io::BufReader::new(passwd_file);
+            for line in reader.lines().flatten() {
+                let parts: Vec<&str> = line.split(':').collect();
+                if parts.len() > 2 {
+                    if let Ok(id) = parts[2].parse::<u32>() {
+                        map.insert(id, parts[0].to_string());
+                    }
+                }
+            }
+        }
+        unsafe {
+            USERNAME_MAP = Some(Mutex::new(map));
+        }
+    });
+
+    unsafe {
+        USERNAME_MAP.as_ref()?.lock().ok()?.get(&uid).cloned()
+    }
+}
 
 fn show_children(
     procs: &Vec<Process>,
@@ -140,7 +152,7 @@ fn show_proc(
         if proc.uid == last_uid {
             "".to_string()
         } else {
-            format!(",{}", proc.uid)
+            format!(",{}", get_username(proc.uid).unwrap_or_else(|| proc.uid.to_string()))
         },
         if proc.args.is_empty() {
             "".to_string()
