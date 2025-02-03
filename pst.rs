@@ -127,32 +127,24 @@ fn show_proc(
     proc: &Process
 ) -> io::Result<()> {
     let mut prefix = String::new();
-    if depth > 0 {
-        for i in 1..=depth {
-            let more = more_at_depth.contains(&i);
-            prefix.push_str("  ");
-            if i == depth {
-                prefix.push_str(if last { "└─" } else { "├─" });
-            } else {
-                prefix.push_str(if more { "│ " } else { "  " });
-            }
+    for i in 1..=depth {
+        let more = more_at_depth.contains(&i);
+        prefix.push_str("  ");
+        if i == depth {
+            prefix.push_str(if last { "└─" } else { "├─" });
+        } else {
+            prefix.push_str(if more { "│ " } else { "  " });
         }
     }
+    let username = get_username(proc.uid).unwrap_or_else(|| proc.uid.to_string());
+    let args = proc.args[1..].iter().map(|arg| escape(arg)).collect::<Vec<String>>().join(" ");
     println!(
-        "{}{},{}{} {}",
+        "{}{},{}{}{}",
         prefix,
         proc.cmd,
         proc.pid,
-        if proc.uid == last_uid {
-            "".to_string()
-        } else {
-            format!(",{}", get_username(proc.uid).unwrap_or_else(|| proc.uid.to_string()))
-        },
-        if proc.args.is_empty() {
-            "".to_string()
-        } else {
-            proc.args[1..].iter().map(|arg| escape(arg)).collect::<Vec<String>>().join(" ")
-        }
+        if proc.uid == last_uid { "".to_string() } else { format!(",{}", username) },
+        if args.is_empty() { "".to_string() } else { format!(" {}", args) },
     );
     show_children(procs, depth, more_at_depth, proc.pid, proc.uid)
 }
