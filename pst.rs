@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::fs::{self, File};
 use std::io::{self, BufRead, Read};
 use std::os::unix::fs::MetadataExt;
-use std::sync::{Mutex, Once};
+use std::sync::OnceLock;
 
 #[derive(PartialEq, PartialOrd)]
 struct Process {
@@ -72,11 +72,10 @@ fn read_procs() -> io::Result<Vec<Process>> {
     get_pids()?.into_iter().map(build_proc).collect()
 }
 
-static INIT: Once = Once::new();
-static mut USERNAME_MAP: Option<Mutex<HashMap<u32, String>>> = None;
+static USERNAME_MAP: OnceLock<HashMap<u32, String>> = OnceLock::new();
 
 fn get_username(uid: u32) -> Option<String> {
-    INIT.call_once(|| {
+    let username_map = USERNAME_MAP.get_or_init(|| {
         let mut map = HashMap::new();
         if let Ok(passwd_file) = File::open("/etc/passwd") {
             let reader = io::BufReader::new(passwd_file);
@@ -89,14 +88,9 @@ fn get_username(uid: u32) -> Option<String> {
                 }
             }
         }
-        unsafe {
-            USERNAME_MAP = Some(Mutex::new(map));
-        }
+        map
     });
-
-    unsafe {
-        USERNAME_MAP.as_ref()?.lock().ok()?.get(&uid).cloned()
-    }
+    username_map.get(&uid).cloned()
 }
 
 fn show_children(
