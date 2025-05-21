@@ -38,12 +38,12 @@ fn build_proc(pid: i32) -> io::Result<Process> {
 
     let cmdline_path = format!("{}/cmdline", proc_dir);
     let mut cmdline = String::new();
-    fs::File::open(cmdline_path)?.read_to_string(&mut cmdline)?;
+    File::open(cmdline_path)?.read_to_string(&mut cmdline)?;
     let args = split_args(&cmdline);
 
     let stat_path = format!("{}/stat", proc_dir);
     let mut stat = String::new();
-    fs::File::open(stat_path)?.read_to_string(&mut stat)?;
+    File::open(stat_path)?.read_to_string(&mut stat)?;
 
     let cmd_start = stat.find('(').unwrap_or(0) + 1;
     let cmd_end = stat.rfind(')').unwrap_or(stat.len());
