@@ -4,7 +4,7 @@ use std::io::{self, BufRead, Read};
 use std::os::unix::fs::MetadataExt;
 use std::sync::OnceLock;
 
-#[derive(PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd)]
 struct Process {
     cmd: String,
     pid: i32,
@@ -28,7 +28,10 @@ fn escape(cmd: &str) -> String {
 }
 
 fn split_args(content: &str) -> Vec<String> {
-    content.split('\0').map(String::from).collect()
+    content.strip_suffix('\0').unwrap_or(content)
+        .split('\0')
+        .map(String::from)
+        .collect()
 }
 
 fn build_proc(pid: i32) -> io::Result<Process> {
