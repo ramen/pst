@@ -26,7 +26,9 @@ fn escape(cmd: &str) -> String {
 }
 
 fn split_args(content: &str) -> Vec<String> {
-    content.strip_suffix('\0').unwrap_or(content)
+    content
+        .strip_suffix('\0')
+        .unwrap_or(content)
         .split('\0')
         .map(String::from)
         .collect()
