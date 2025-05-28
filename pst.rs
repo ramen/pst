@@ -95,7 +95,7 @@ fn get_username(uid: u32) -> Option<String> {
 }
 
 fn show_children(
-    procs: &Vec<Process>,
+    procs: &[Process],
     depth: i32,
     more_at_depth: HashSet<i32>,
     parent: i32,
@@ -120,7 +120,7 @@ fn show_children(
 }
 
 fn show_proc(
-    procs: &Vec<Process>,
+    procs: &[Process],
     depth: i32,
     last: bool,
     more_at_depth: HashSet<i32>,
