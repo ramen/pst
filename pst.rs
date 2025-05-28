@@ -16,12 +16,10 @@ struct Process {
 fn escape(cmd: &str) -> String {
     let mut buf = String::with_capacity(cmd.len() + 8);
     for c in cmd.chars() {
-        if c == '\\' {
-            buf.push_str("\\\\");
-        } else if c > ' ' && c <= '~' {
-            buf.push(c);
-        } else {
-            buf.push_str(&format!("\\{:03o}", c as u32));
+        match c {
+            '\\' => buf.push_str("\\\\"),
+            c if c > ' ' && c <= '~' => buf.push(c),
+            c => buf.push_str(&format!("\\{:03o}", c as u32)),
         }
     }
     buf
